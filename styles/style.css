@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap');
+
+body {
+    width: 99vw;
+    height: 95vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.calculatorbody{
+    padding: 10px;
+    border-width: 5px;
+    border-style: outset;
+    border-color: rgb(108, 179, 189);
+    border-radius: 15px;
+    width: fit-content;
+    height: fit-content;
+    background-color: rgb(220, 235, 235);
+    box-shadow: 5px 5px 5px rgb(180, 198, 199);
+}
+
+.topsection {
+    margin-top: 10x;
+    padding-top: 10px;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    width: 420px;
+    height: 115px;
+    background-color: rgb(109, 121, 121);
+}
+
+.name {
+    padding-left: 3px;
+    margin-left: 20px;
+    margin-top: 0px;
+    font-size: 24px;
+    color: rgb(166, 242, 255);
+    font-family: 'Orbitron', sans-serif;
+}
+
+.name > strong {
+
+    color: rgb(52, 196, 221);
+    font-weight: 500;
+}
+
+.display {
+    margin: 20px;
+    margin-top: 10px;
+    padding-right: 10px;
+    font-size: 36px;
+    text-align: right;
+    border-style: inset;
+    border-color: gray;
+    background-color: rgb(226, 226, 207);
+    font-family: 'Orbitron', sans-serif;
+    color: rgb(77, 129, 129);
+}
+
+.buttongrid {
+    width: 400px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 100px 100px 100px 100px;
+    grid-template-rows: 80px 80px 80px 80px 80px;
+}
+
+.btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 8px;
+    border-radius: 5px;
+    border-style:outset;
+    border-color:grey;
+    background-color: rgb(240, 253, 255);
+    box-shadow: 4px 4px 4px rgb(180, 198, 199);
+}
+
+
+.num {
+    background-color: rgb(164, 219, 226);
+    border-color:rgb(75, 124, 131);
+}
+
+.clr {
+    background-color:rgb(230, 227, 178);  
+    border-color:rgb(131, 134, 100);
+}
+.btn > div {
+    font-size: 24px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 500;
+}
+
+.operator > div {
+    font-size: 36px;
+    font-weight: 400;
+}
+
+
+
+.row1 {
+    grid-row: 1;
+}
+.row2 {
+    grid-row: 2;
+}
+.row3 {
+    grid-row: 3;
+}
+.row4 {
+    grid-row: 4;
+}
+.row5 {
+    grid-row: 5;
+}
+.col1 {
+    grid-column: 1;
+}
+.col2 {
+    grid-column: 2;
+}
+.col3 {
+    grid-column: 3;
+}
+.col4 {
+    grid-column: 4;
+}
+.col5 {
+    grid-column: 5;
+}
+.row45 {
+    grid-row: 4 / 2 span;
+}
