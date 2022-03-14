@@ -94,12 +94,11 @@ function processSpecialInput ( input ) {
             break;
         case 'NEG':
             if (currentObject.id != 'OPERATOR') {
-                if (!currentObject.text.includes('.')) {
-                    currentObject.text = currentObject.text + '.';
+                if (currentObject.text.includes('-')) {
+                    currentObject.text = currentObject.text.replaceAll('-','');
+                } else {
+                    currentObject.text = '-' + currentObject.text;
                 }
-            } else {
-                currentObject = rightOperand;
-                currentObject.text =  '0.';
             }
             break;
     }
