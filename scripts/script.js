@@ -1,6 +1,6 @@
 let leftOperand = {
     id: 'LEFT',
-    text: ''
+    text: '0'
 };
 let rightOperand = {
     id: 'RIGHT',
@@ -52,10 +52,12 @@ function processNumberInput ( input ) {
 }
 
 function processOperatorInput ( input ) {
+    debugger
     operator.text = input;
     switch (currentObject.id) {
         case 'LEFT':
         case 'OPERATOR':
+            console.log("Set Operator to " + operator.text);
             currentObject = operator;
             break;
         case 'RIGHT':
@@ -67,33 +69,58 @@ function processOperatorInput ( input ) {
 }
 
 function processSpecialInput ( input ) {
+    debugger
+    let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
+    let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
+
     switch ( input ) {
         case 'EQL':
             if (currentObject.id == 'RIGHT' && rightOperand.text != "") {
-                leftOperand.text = performCalculation();
+                leftOperand.text = performCalculation(leftComponent,rightComponent,operator.text) + '';
                 rightOperand.text = '';
                 operator.text = '';
                 currentObject = leftOperand;
             }
+            break;
+        case 'DOT':
+            if (currentObject.id != 'OPERATOR') {
+                if (!currentObject.text.includes('.')) {
+                    currentObject.text = currentObject.text + '.';
+                }
+            } else {
+                currentObject = rightOperand;
+                currentObject.text =  '0.';
+            }
+            break;
+        case 'NEG':
+            if (currentObject.id != 'OPERATOR') {
+                if (!currentObject.text.includes('.')) {
+                    currentObject.text = currentObject.text + '.';
+                }
+            } else {
+                currentObject = rightOperand;
+                currentObject.text =  '0.';
+            }
+            break;
     }
 
     
 }
 
 
-function performCalculation() {
-    switch ( operator.text ) {
+function performCalculation( leftComponent, rightComponent, operator ) {
+    switch ( operator ) {
         case 'ADD':
-            return parseInt(leftOperand.text) + parseInt(rightOperand.text);
+            return leftComponent + rightComponent;
             break
         case 'SUB':
-            return parseInt(leftOperand.text) - parseInt(rightOperand.text);
+            return leftComponent - rightComponent;
             break
         case 'MPY':
-            return parseInt(leftOperand.text) * parseInt(rightOperand.text);
+            return leftComponent * rightComponent;
             break
         case 'DIV':
-            return parseInt(leftOperand.text) / parseInt(rightOperand.text);
+            return leftComponent / rightComponent;
             break
     }
     
