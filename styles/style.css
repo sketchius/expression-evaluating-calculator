@@ -28,14 +28,14 @@ body {
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
     width: 420px;
-    height: 115px;
+    height: 135px;
     background-color: rgb(109, 121, 121);
 }
 
 .name {
     padding-left: 3px;
     margin-left: 20px;
-    margin-top: 0px;
+    margin-top: 20px;
     font-size: 24px;
     color: rgb(166, 242, 255);
     font-family: 'Orbitron', sans-serif;
@@ -48,6 +48,7 @@ body {
 }
 
 .display {
+    height: 46px;
     margin: 20px;
     margin-top: 10px;
     padding-right: 10px;
