@@ -55,6 +55,12 @@ function processOperatorInput ( input ) {
     operator.text = input;
     switch (currentObject.id) {
         case 'LEFT':
+        case 'OPERATOR':
+            currentObject = operator;
+            break;
+        case 'RIGHT':
+            leftOperand.text = performCalculation();
+            rightOperand.text = '';
             currentObject = operator;
             break;
     }
@@ -63,7 +69,7 @@ function processOperatorInput ( input ) {
 function processSpecialInput ( input ) {
     switch ( input ) {
         case 'EQL':
-            if (currentObject.id = 'RIGHT') {
+            if (currentObject.id == 'RIGHT' && rightOperand.text != "") {
                 leftOperand.text = performCalculation();
                 rightOperand.text = '';
                 operator.text = '';
@@ -87,10 +93,8 @@ function performCalculation() {
 function updateDisplay () {
     switch (currentObject.id) {
         case 'LEFT':
-            displayText.textContent = currentObject.text;
-            break;
         case 'OPERATOR':
-            displayText.textContent = currentObject.text;
+            displayText.textContent = leftOperand.text;
             break;
         case 'RIGHT':
             displayText.textContent = currentObject.text;
