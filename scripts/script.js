@@ -24,6 +24,7 @@ buttons.forEach( (button) => button.addEventListener('click',(e) => {
 
 
 function processInput ( inputType, inputCode ) {
+    debugger
     switch (inputType) {
         case 'NUM':
             processNumberInput( inputCode );
@@ -52,7 +53,6 @@ function processNumberInput ( input ) {
 }
 
 function processOperatorInput ( input ) {
-    debugger
     operator.text = input;
     switch (currentObject.id) {
         case 'LEFT':
@@ -61,7 +61,9 @@ function processOperatorInput ( input ) {
             currentObject = operator;
             break;
         case 'RIGHT':
-            leftOperand.text = performCalculation();
+            let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
+            let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
+            leftOperand.text = processDecimal(performCalculation(leftComponent,rightComponent,operator.text)) + '';
             rightOperand.text = '';
             currentObject = operator;
             break;
@@ -69,14 +71,14 @@ function processOperatorInput ( input ) {
 }
 
 function processSpecialInput ( input ) {
-    debugger
-    let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
-    let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
+
 
     switch ( input ) {
         case 'EQL':
             if (currentObject.id == 'RIGHT' && rightOperand.text != "") {
-                leftOperand.text = performCalculation(leftComponent,rightComponent,operator.text) + '';
+                let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
+                let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
+                leftOperand.text = processDecimal(performCalculation(leftComponent,rightComponent,operator.text)) + '';
                 rightOperand.text = '';
                 operator.text = '';
                 currentObject = leftOperand;
@@ -101,6 +103,17 @@ function processSpecialInput ( input ) {
                 }
             }
             break;
+        case 'CLR':
+            currentObject = leftOperand;
+            leftOperand.text = "0";
+            rightOperand.text = "";
+            operator.text = "";
+            break;
+        case 'BCK':
+            if (currentObject.id != 'OPERATOR') {
+                currentObject.text = currentObject.text.slice(0,currentObject.text.length-1);
+            }
+            break;
     }
 
     
@@ -123,6 +136,10 @@ function performCalculation( leftComponent, rightComponent, operator ) {
             break
     }
     
+}
+
+function processDecimal ( number ) {
+    return +number.toFixed(10);
 }
 
 
