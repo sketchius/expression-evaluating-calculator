@@ -86,7 +86,17 @@ function performCalculation() {
         case 'ADD':
             return parseInt(leftOperand.text) + parseInt(rightOperand.text);
             break
+        case 'SUB':
+            return parseInt(leftOperand.text) - parseInt(rightOperand.text);
+            break
+        case 'MPY':
+            return parseInt(leftOperand.text) * parseInt(rightOperand.text);
+            break
+        case 'DIV':
+            return parseInt(leftOperand.text) / parseInt(rightOperand.text);
+            break
     }
+    
 }
 
 
