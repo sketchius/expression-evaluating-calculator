@@ -11,16 +11,20 @@ let operator = {
     text: ''
 };
 
+
 let currentObject = leftOperand;
 
 let buttons = document.querySelectorAll('.btn');
 let displayText = document.querySelector('.display');
 
+
 updateDisplay();
+
 
 buttons.forEach( (button) => button.addEventListener('click',(e) => {
     processInput( e.currentTarget.getAttribute('data-inputtype'),e.currentTarget.getAttribute('data-inputcode'));
 }));
+
 
 document.addEventListener('keydown',(e) => {
     if (!e.repeat) {
@@ -67,10 +71,9 @@ function processOperatorInput ( input ) {
             currentObject = operator;
             break;
         case 'RIGHT':
-            let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
-            let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
-            leftOperand.text = processDecimal(performCalculation(leftComponent,rightComponent,operator.text)) + '';
-            rightOperand.text = '';
+            //This means the user entered something like "4 + 2 +". Meaning that we need to process the current operation
+            //first, then copy the result to the left operand and retain the new operator that was just inputed.
+            runEquals();
             currentObject = operator;
             break;
     }
@@ -82,10 +85,7 @@ function processSpecialInput ( input ) {
     switch ( input ) {
         case 'EQL':
             if (currentObject.id == 'RIGHT' && rightOperand.text != "") {
-                let leftComponent = leftOperand.text.includes('.') ? parseFloat(leftOperand.text) : parseInt(leftOperand.text);
-                let rightComponent = rightOperand.text.includes('.') ? parseFloat(rightOperand.text) : parseInt(rightOperand.text);
-                leftOperand.text = processDecimal(performCalculation(leftComponent,rightComponent,operator.text)) + '';
-                rightOperand.text = '';
+                runEquals();
                 operator.text = '';
                 currentObject = leftOperand;
             }
@@ -126,6 +126,12 @@ function processSpecialInput ( input ) {
 }
 
 
+function runEquals() {
+    leftOperand.text = processDecimal(performCalculation(parseFloat(leftOperand.text),parseFloat(rightOperand.text),operator.text)) + '';
+    rightOperand.text = '';
+}
+
+
 function performCalculation( leftComponent, rightComponent, operator ) {
     switch ( operator ) {
         case 'ADD':
@@ -144,10 +150,13 @@ function performCalculation( leftComponent, rightComponent, operator ) {
     
 }
 
+
 function processDecimal ( number ) {
     // This limits the number of decimal points based on how many digits
     // are being used on the left side of the decimal.
     let currentDigits = (parseInt(number)+"").length;
+    // Below, the '+' in '+number.toFixed(...' will remove any unnecessary decimal digits as
+    // part of the conversion from string (i.e. '10.0000000000000' -> 10) 
     return +number.toFixed(Math.max(0,15-currentDigits));
 }
 
