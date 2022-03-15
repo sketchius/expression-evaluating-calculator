@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500&family=Red+Hat+Mono&display=swap');
+
 
 body {
     width: 99vw;
@@ -8,6 +9,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: rgb(216, 230, 217);
 }
 
 .calculatorbody{
@@ -19,7 +21,7 @@ body {
     width: fit-content;
     height: fit-content;
     background-color: rgb(220, 235, 235);
-    box-shadow: 5px 5px 5px rgb(180, 198, 199);
+    box-shadow: 5px 5px 5px rgb(99, 151, 124);
 }
 
 .topsection {
@@ -57,8 +59,9 @@ body {
     border-style: inset;
     border-color: gray;
     background-color: rgb(226, 226, 207);
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Red Hat Mono', monospace;
     color: rgb(77, 129, 129);
+    box-shadow: inset 4px 4px 2px rgb(164, 170, 143);
 }
 
 .buttongrid {
@@ -78,7 +81,11 @@ body {
     border-style:outset;
     border-color:grey;
     background-color: rgb(240, 253, 255);
-    box-shadow: 4px 4px 4px rgb(180, 198, 199);
+    box-shadow: 4px 4px 4px rgb(146, 175, 177);
+}
+
+.btn > div {
+    user-select: none;
 }
 
 

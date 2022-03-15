@@ -22,9 +22,16 @@ buttons.forEach( (button) => button.addEventListener('click',(e) => {
     processInput( e.currentTarget.getAttribute('data-inputtype'),e.currentTarget.getAttribute('data-inputcode'));
 }));
 
+document.addEventListener('keydown',(e) => {
+    if (!e.repeat) {
+        console.log(e);
+        handleKeyboardInput(e.code);
+    }
+
+})
+
 
 function processInput ( inputType, inputCode ) {
-    debugger
     switch (inputType) {
         case 'NUM':
             processNumberInput( inputCode );
@@ -57,7 +64,6 @@ function processOperatorInput ( input ) {
     switch (currentObject.id) {
         case 'LEFT':
         case 'OPERATOR':
-            console.log("Set Operator to " + operator.text);
             currentObject = operator;
             break;
         case 'RIGHT':
@@ -139,7 +145,10 @@ function performCalculation( leftComponent, rightComponent, operator ) {
 }
 
 function processDecimal ( number ) {
-    return +number.toFixed(10);
+    // This limits the number of decimal points based on how many digits
+    // are being used on the left side of the decimal.
+    let currentDigits = (parseInt(number)+"").length;
+    return +number.toFixed(Math.max(0,15-currentDigits));
 }
 
 
@@ -152,5 +161,45 @@ function updateDisplay () {
         case 'RIGHT':
             displayText.textContent = currentObject.text;
             break;
+    }
+}
+
+
+function handleKeyboardInput ( keyCode ) {
+    if (keyCode.includes('Digit')) {
+        let number = keyCode.slice(keyCode.length-1,keyCode.length);
+        processInput('NUM',number);
+    } else {
+        switch ( keyCode ) {
+            case 'Minus':
+                processInput('OPR','SUB');
+                break;
+            case 'Equal':
+                processInput('OPR','ADD');
+                break;
+            case 'KeyX':
+                processInput('OPR','MPY');
+                break;
+            case 'Slash':
+                processInput('OPR','DIV');
+                break;
+            case 'Enter':
+                processInput('SPL','EQL');
+                break;
+            case 'Escape':
+                processInput('SPL','CLR');
+                break;
+            case 'Period':
+                processInput('SPL','DOT');
+                break;
+            case 'Backquote':
+                processInput('SPL','NEG');
+                break;
+            case 'Backspace':
+                processInput('SPL','BCK');
+                break;
+
+
+        }
     }
 }
