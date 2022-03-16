@@ -177,7 +177,9 @@ function updateDisplay () {
 function handleKeyboardInput ( keyCode ) {
     if (keyCode.includes('Digit')) {
         let number = keyCode.slice(keyCode.length-1,keyCode.length);
-        processInput('NUM',number);0000000
+        processInput('NUM',number);
+    } else {
+        switch( keyCode) {
             case 'Equal':
                 processInput('OPR','ADD');
                 break;
