@@ -177,12 +177,7 @@ function updateDisplay () {
 function handleKeyboardInput ( keyCode ) {
     if (keyCode.includes('Digit')) {
         let number = keyCode.slice(keyCode.length-1,keyCode.length);
-        processInput('NUM',number);
-    } else {
-        switch ( keyCode ) {
-            case 'Minus':
-                processInput('OPR','SUB');
-                break;
+        processInput('NUM',number);0000000
             case 'Equal':
                 processInput('OPR','ADD');
                 break;

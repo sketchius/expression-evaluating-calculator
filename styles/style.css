@@ -77,10 +77,11 @@ body {
     justify-content: center;
     align-items: center;
     margin: 8px;
+    color: rgb(11, 58, 59);
     border-radius: 5px;
     border-style:outset;
-    border-color:grey;
-    background-color: rgb(240, 253, 255);
+    border-color:rgb(107, 149, 155);
+    background-color: rgb(177, 221, 223);
     box-shadow: 4px 4px 4px rgb(146, 175, 177);
 }
 
@@ -90,13 +91,15 @@ body {
 
 
 .num {
-    background-color: rgb(164, 219, 226);
-    border-color:rgb(75, 124, 131);
+    background-color: rgb(51, 187, 192);
+    color: white;
+    border-color:rgb(75, 131, 131);
 }
 
 .clr {
-    background-color:rgb(230, 227, 178);  
-    border-color:rgb(131, 134, 100);
+    color: rgb(59, 11, 11);
+    background-color:rgb(255, 159, 159);  
+    border-color:rgb(134, 100, 100);
 }
 .btn > div {
     font-size: 24px;
