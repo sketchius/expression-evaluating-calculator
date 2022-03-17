@@ -96,26 +96,36 @@ function processInput ( inputType, inputCode ) {
 
         case 'Equals':
             // action = 'Evaluate';
-			animate();
+			// animate();
 			// debugger;
-			// let done = false;
-			// let counter = 0;
-			// while (done == false && counter < 100) {
-			// 	let breakOut = false;
-			// 	for (let i = 0; i < expressionNodes.length && breakOut == false; i++ ) {
-			// 		let node = expressionNodes[i]
-			// 		if (node.type == 'Operator') {
-			// 			node.type = 'Number';
-			// 			node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
-			// 			removeAdjacentNodes(node,true,true);
-			// 			breakOut = true;
-			// 		}
-			// 	}
-			// 	if (expressionNodes.length == 1)
-			// 		done = true;
-			// 	counter++;
-			// }
-            // break;
+
+			computeNodePriorities();
+			debugger;
+			let expressionNodesOrderedByOperation = expressionNodes.sort(
+				function (nodeA, nodeB) {
+					return nodeB.priority-nodeA.priority;
+
+					
+			})
+
+			let done = false;
+			let counter = 0;
+			while (done == false && counter < 100) {
+				let breakOut = false;
+				for (let i = 0; i < expressionNodes.length && breakOut == false; i++ ) {
+					let node = expressionNodes[i]
+					if (node.type == 'Operator') {
+						node.type = 'Number';
+						node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
+						removeAdjacentNodes(node,true,true);
+						breakOut = true;
+					}
+				}
+				if (expressionNodes.length == 1)
+					done = true;
+				counter++;
+			}
+            break;
     }
 
 
@@ -164,61 +174,33 @@ function getNewNodeAction (currentExpressionNode, inputType, input, sameTypeRule
     
 }
 
-function processNumberInput ( currentExpressionNode, input ) {
+function computeNodePriorities () {
+	let currentBracketLevel = 0;
+	for (let i = 0; i < expressionNodes.length; i++) {
+		let node = expressionNodes[i];
+		switch (node.type) {
+			case 'Number':
+				node.priority = -1;
+				continue;
+			case 'Operator':
+				switch (node.value) {
+					case '+':
+					case '-':
+						node.priority = 1000 + currentBracketLevel*10000 + (expressionNodes.length-i);
+						continue;
+					case '*':
+					case '/':
+						node.priority = 2000 + currentBracketLevel*10000 + (expressionNodes.length-i);
+						continue;
+							
+				}
+		}
+		node.priority = -1;
+		continue;
 
-    switch ( getNewNodeAction(currentExpressionNode,'Number',input,'Append') ) {
-        case 'Create':
-            expressionNodes.push(new ExpressionNode('Number',input,null,null));
-            break;
-        case 'Append':
-            currentExpressionNode.value = currentExpressionNode.value + input;
-            break;
-        case 'Overwrite':
-            currentExpressionNode.type = 'Number';
-            currentExpressionNode.value = input;
-    }
-
-    console.table(expressionNodes);
-
-    if (currentObject.id == 'OPERATOR') {
-        currentObject = rightOperand;
-    }
-    if (currentObject.text == '0') {
-        currentObject.text = '';
-    }
-    currentObject.text = currentObject.text + input;
+	}
 }
 
-function processOperatorInput ( currentExpressionNode, input ) {
-    
-    if (currentExpressionNode === undefined) {
-        expressionNodes.push(new ExpressionNode('Operator',input,null,null));
-    } else {
-        switch (currentExpressionNode.type) {
-            case 'Number':
-                expressionNodes.push(new ExpressionNode('Operator',input,null,null));
-                break;
-        }
-    }
-
-
-    console.table(expressionNodes);
-
-
-    operator.text = input;
-    switch (currentObject.id) {
-        case 'LEFT':
-        case 'OPERATOR':
-            currentObject = operator;
-            break;
-        case 'RIGHT':
-            //This means the user entered something like '4 + 2 +'. Meaning that we need to process the current operation
-            //first, then copy the result to the left operand and retain the new operator that was just inputed.
-            runEquals();
-            currentObject = operator;
-            break;
-    }
-}
 
 function processSpecialInput ( currentExpressionNode, input ) {
 
@@ -355,22 +337,14 @@ function updateDisplay () {
 
 	displayText.textContent = displayString;
 
-    // switch (currentObject.id) {
-    //     case 'LEFT':
-    //     case 'OPERATOR':
-    //         displayText.textContent = leftOperand.text;
-    //         break;
-    //     case 'RIGHT':
-    //         displayText.textContent = currentObject.text;
-    //         break;
-    // }
+
 }
 
 
 function handleKeyboardInput ( keyCode ) {
     if (keyCode.includes('Digit')) {
         let number = keyCode.slice(keyCode.length-1,keyCode.length);
-        processInput('NUM',number);
+        processInput('Number',number);
     } else {
         switch( keyCode) {
             case 'Equal':
