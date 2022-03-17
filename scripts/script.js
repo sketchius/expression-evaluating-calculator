@@ -1,19 +1,21 @@
 
 
 
-function ExpressionComponent( type, value, previousComponent, nextCompenent) {
+function ExpressionNode( type, value, previousNode, nextNode) {
+    this.id = numberOfIds;
+    numberOfIds++;
     this.type = type;
     this.value = value;
-    this.previousComponent = previousComponent;
-    this.nextCompenent = nextCompenent;
+    this.previousNode = previousNode;
+    this.nextNode = nextNode;
     this.priority = 0;
 }
 
-const expressionComponents = [];
+const expressionNodes = [];
 
 
 
-
+let numberOfIds=0;
 
 
 let leftOperand = {
@@ -52,57 +54,104 @@ document.addEventListener('keydown',(e) => {
 
 })
 
+function animate(  ) {
+	let breakOut = false;
+	for (let i = 0; i < expressionNodes.length && breakOut == false; i++ ) {
+		let node = expressionNodes[i]
+		if (node.type == 'Operator') {
+			node.type = 'Number';
+			node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
+			removeAdjacentNodes(node,true,true);
+			breakOut = true;
+		}
+	}
+	if (expressionNodes.length != 1)
+		window.setTimeout( animate, 1000)
+
+	updateDisplay();
+}
+
 
 function processInput ( inputType, inputCode ) {
-    const currentExpressionComponent = expressionComponents[expressionComponents.length-1];
+    const currentExpressionNode = expressionNodes[expressionNodes.length-1];
 
-    debugger;
 
     let action = '';
 
     switch (inputType) {
         case 'Number':
             if (inputCode.includes('.'))
-                action = getNewComponentAction(currentExpressionComponent,inputType,inputCode,'ExclusiveAppend');
+                action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'ExclusiveAppend');
             else
-                action = getNewComponentAction(currentExpressionComponent,inputType,inputCode,'Append');
+                action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'Append');
             break;
 
         case 'Operator':
-            action = getNewComponentAction(currentExpressionComponent,inputType,inputCode,'Overwrite');
+            action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'Overwrite');
             break;
 
         case 'Special':
-            action = getNewComponentAction(currentExpressionComponent,inputType,inputCode,'ExclusiveAppend');
+            action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'ExclusiveAppend');
             break;
+
+        case 'Equals':
+            // action = 'Evaluate';
+			animate();
+			// debugger;
+			// let done = false;
+			// let counter = 0;
+			// while (done == false && counter < 100) {
+			// 	let breakOut = false;
+			// 	for (let i = 0; i < expressionNodes.length && breakOut == false; i++ ) {
+			// 		let node = expressionNodes[i]
+			// 		if (node.type == 'Operator') {
+			// 			node.type = 'Number';
+			// 			node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
+			// 			removeAdjacentNodes(node,true,true);
+			// 			breakOut = true;
+			// 		}
+			// 	}
+			// 	if (expressionNodes.length == 1)
+			// 		done = true;
+			// 	counter++;
+			// }
+            // break;
     }
+
+
+
+
 
     switch ( action ) {
         case 'Create':
-            expressionComponents.push(new ExpressionComponent(inputType,inputCode,currentExpressionComponent===undefined?null:currentExpressionComponent,null));
+            expressionNodes.push(new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+            if (currentExpressionNode != undefined)
+                currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
             break;
         case 'Append':
-            currentExpressionComponent.value = currentExpressionComponent.value + inputCode;
+            currentExpressionNode.value = currentExpressionNode.value + inputCode;
             break;
         case 'Overwrite':
-            currentExpressionComponent.type = inputType;
-            currentExpressionComponent.value = inputCode;
+            currentExpressionNode.type = inputType;
+            currentExpressionNode.value = inputCode;
+        case 'Evaluate':
+            
     }
 
-    console.table(expressionComponents);
+    console.table(expressionNodes);
 
     updateDisplay();
 }
 
-function getNewComponentAction (currentExpressionComponent, inputType, input, sameTypeRule ) {
-    if (currentExpressionComponent === undefined) return 'Create';
+function getNewNodeAction (currentExpressionNode, inputType, input, sameTypeRule ) {
+    if (currentExpressionNode === undefined) return 'Create';
 
-    if (currentExpressionComponent.type == inputType) {
+    if (currentExpressionNode.type == inputType) {
         switch (sameTypeRule) {
             case 'Append':
                 return 'Append';
             case 'ExclusiveAppend':
-                if (!currentExpressionComponent.value.includes(input))
+                if (!currentExpressionNode.value.includes(input))
                     return 'Append';
                 else
                     return 'NullAction';
@@ -115,21 +164,21 @@ function getNewComponentAction (currentExpressionComponent, inputType, input, sa
     
 }
 
-function processNumberInput ( currentExpressionComponent, input ) {
+function processNumberInput ( currentExpressionNode, input ) {
 
-    switch ( getNewComponentAction(currentExpressionComponent,'Number',input,'Append') ) {
+    switch ( getNewNodeAction(currentExpressionNode,'Number',input,'Append') ) {
         case 'Create':
-            expressionComponents.push(new ExpressionComponent('Number',input,null,null));
+            expressionNodes.push(new ExpressionNode('Number',input,null,null));
             break;
         case 'Append':
-            currentExpressionComponent.value = currentExpressionComponent.value + input;
+            currentExpressionNode.value = currentExpressionNode.value + input;
             break;
         case 'Overwrite':
-            currentExpressionComponent.type = 'Number';
-            currentExpressionComponent.value = input;
+            currentExpressionNode.type = 'Number';
+            currentExpressionNode.value = input;
     }
 
-    console.table(expressionComponents);
+    console.table(expressionNodes);
 
     if (currentObject.id == 'OPERATOR') {
         currentObject = rightOperand;
@@ -140,20 +189,20 @@ function processNumberInput ( currentExpressionComponent, input ) {
     currentObject.text = currentObject.text + input;
 }
 
-function processOperatorInput ( currentExpressionComponent, input ) {
-    debugger;
-    if (currentExpressionComponent === undefined) {
-        expressionComponents.push(new ExpressionComponent('Operator',input,null,null));
+function processOperatorInput ( currentExpressionNode, input ) {
+    
+    if (currentExpressionNode === undefined) {
+        expressionNodes.push(new ExpressionNode('Operator',input,null,null));
     } else {
-        switch (currentExpressionComponent.type) {
+        switch (currentExpressionNode.type) {
             case 'Number':
-                expressionComponents.push(new ExpressionComponent('Operator',input,null,null));
+                expressionNodes.push(new ExpressionNode('Operator',input,null,null));
                 break;
         }
     }
 
 
-    console.table(expressionComponents);
+    console.table(expressionNodes);
 
 
     operator.text = input;
@@ -171,7 +220,7 @@ function processOperatorInput ( currentExpressionComponent, input ) {
     }
 }
 
-function processSpecialInput ( currentExpressionComponent, input ) {
+function processSpecialInput ( currentExpressionNode, input ) {
 
 
     switch ( input ) {
@@ -183,17 +232,17 @@ function processSpecialInput ( currentExpressionComponent, input ) {
             }
             break;
         case '.':
-            if (currentExpressionComponent === undefined) {
-                expressionComponents.push(new ExpressionComponent('Number','0'+input,null,null));
+            if (currentExpressionNode === undefined) {
+                expressionNodes.push(new ExpressionNode('Number','0'+input,null,null));
             } else {
-                switch (currentExpressionComponent.type) {
+                switch (currentExpressionNode.type) {
                     case 'Number':
-                        if (!currentExpressionComponent.value.includes('.')) {
-                            currentExpressionComponent.value = currentExpressionComponent.value + input;
+                        if (!currentExpressionNode.value.includes('.')) {
+                            currentExpressionNode.value = currentExpressionNode.value + input;
                         }
                         break;
                     case 'Operator':       
-                        expressionComponents.push(new ExpressionComponent('Number','0'+input,null,null));   
+                        expressionNodes.push(new ExpressionNode('Number','0'+input,null,null));   
                         break;
                 }
             }
@@ -231,30 +280,56 @@ function processSpecialInput ( currentExpressionComponent, input ) {
             break;
     }
 
-    console.table(expressionComponents);
+    console.table(expressionNodes);
     
 }
 
+function removeAdjacentNodes(expressionNode, removePrevious, removeNext ) {
+    if (removePrevious) {
+        const previous = expressionNode.previousNode;
+        expressionNode.previousNode = previous.previousNode;
+        if (expressionNode.previousNode != undefined)
+            expressionNode.previousNode.nextNode = expressionNode;
+        previous.previousNode = undefined;
+        previous.nextNode = undefined;
+        removeExpressionNodeById(previous.id);
+    }
+    if (removeNext) {
+        const next = expressionNode.nextNode;
+        expressionNode.nextNode = next.nextNode;
+        if (expressionNode.nextNode != undefined)
+            expressionNode.nextNode.previousNode = expressionNode;
+        next.previousNode = undefined;
+        next.nextNode = undefined;
+        removeExpressionNodeById(next.id);
+    }
+}
 
-function runEquals() {
-    leftOperand.text = processDecimal(performCalculation(parseFloat(leftOperand.text),parseFloat(rightOperand.text),operator.text)) + '';
-    rightOperand.text = '';
+function removeExpressionNodeById( id ) {
+    const nodeIndex = expressionNodes.findIndex( Node => Node.id == id)
+    if (nodeIndex != -1) 
+        expressionNodes.splice(nodeIndex,1);
 }
 
 
-function performCalculation( leftComponent, rightComponent, operator ) {
+function runEquals( leftOperand, rightOperand, operator ) {
+    return processDecimal(performCalculation(parseFloat(leftOperand),parseFloat(rightOperand),operator)) + '';
+}
+
+
+function performCalculation( leftNode, rightNode, operator ) {
     switch ( operator ) {
-        case 'ADD':
-            return leftComponent + rightComponent;
+        case '+':
+            return leftNode + rightNode;
             break
-        case 'SUB':
-            return leftComponent - rightComponent;
+        case '-':
+            return leftNode - rightNode;
             break
-        case 'MPY':
-            return leftComponent * rightComponent;
+        case '*':
+            return leftNode * rightNode;
             break
-        case 'DIV':
-            return leftComponent / rightComponent;
+        case '/':
+            return leftNode / rightNode;
             break
     }
     
@@ -272,15 +347,23 @@ function processDecimal ( number ) {
 
 
 function updateDisplay () {
-    switch (currentObject.id) {
-        case 'LEFT':
-        case 'OPERATOR':
-            displayText.textContent = leftOperand.text;
-            break;
-        case 'RIGHT':
-            displayText.textContent = currentObject.text;
-            break;
-    }
+	let displayString = '';
+
+	for (let i = 0; i < expressionNodes.length; i++) {
+		displayString = displayString + expressionNodes[i].value;
+	}
+
+	displayText.textContent = displayString;
+
+    // switch (currentObject.id) {
+    //     case 'LEFT':
+    //     case 'OPERATOR':
+    //         displayText.textContent = leftOperand.text;
+    //         break;
+    //     case 'RIGHT':
+    //         displayText.textContent = currentObject.text;
+    //         break;
+    // }
 }
 
 
