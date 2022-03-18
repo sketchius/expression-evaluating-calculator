@@ -13,6 +13,8 @@ function ExpressionNode( type, value, previousNode, nextNode) {
 
 const expressionNodes = [];
 
+let cursorPostion = 0;
+
 
 
 let numberOfIds=0;
@@ -73,7 +75,7 @@ function animate(  ) {
 
 
 function processInput ( inputType, inputCode ) {
-    const currentExpressionNode = expressionNodes[expressionNodes.length-1];
+    const currentExpressionNode = expressionNodes[expressionNodes.length-1+cursorPostion];
 
 
     let action = '';
@@ -94,26 +96,31 @@ function processInput ( inputType, inputCode ) {
             action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'ExclusiveAppend');
             break;
 
+		case 'OpenBracket':
+			action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'CreatePair');
+			break;
+
         case 'Equals':
             // action = 'Evaluate';
 			// animate();
 			// debugger;
 
 			computeNodePriorities();
-			debugger;
-			let expressionNodesOrderedByOperation = expressionNodes.sort(
+			let expressionNodesOrderedByOperation = expressionNodes.slice(); 
+			
+			expressionNodesOrderedByOperation.sort(
 				function (nodeA, nodeB) {
 					return nodeB.priority-nodeA.priority;
 
 					
 			})
-
+			console.table(expressionNodesOrderedByOperation);
 			let done = false;
 			let counter = 0;
 			while (done == false && counter < 100) {
 				let breakOut = false;
-				for (let i = 0; i < expressionNodes.length && breakOut == false; i++ ) {
-					let node = expressionNodes[i]
+				for (let i = 0; i < expressionNodesOrderedByOperation.length && breakOut == false; i++ ) {
+					let node = expressionNodesOrderedByOperation[i]
 					if (node.type == 'Operator') {
 						node.type = 'Number';
 						node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
@@ -121,23 +128,32 @@ function processInput ( inputType, inputCode ) {
 						breakOut = true;
 					}
 				}
-				if (expressionNodes.length == 1)
+				if (expressionNodesOrderedByOperation.length == 1 || expressionNodesOrderedByOperation[0].priority == -1)
 					done = true;
 				counter++;
 			}
             break;
+
     }
 
 
 
+		console.log(`Action = ${action}`);
 
 
     switch ( action ) {
         case 'Create':
-            expressionNodes.push(new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+            expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
             if (currentExpressionNode != undefined)
                 currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
             break;
+		case 'CreatePair':
+			expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+            if (currentExpressionNode != undefined)
+                currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
+			expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode('CloseBracket',')',currentExpressionNode===undefined?null:currentExpressionNode,null));
+			cursorPostion--;
+			break;
         case 'Append':
             currentExpressionNode.value = currentExpressionNode.value + inputCode;
             break;
@@ -154,7 +170,12 @@ function processInput ( inputType, inputCode ) {
 }
 
 function getNewNodeAction (currentExpressionNode, inputType, input, sameTypeRule ) {
-    if (currentExpressionNode === undefined) return 'Create';
+    if (currentExpressionNode === undefined) {
+		if (sameTypeRule == 'CreatePair')
+		return 'CreatePair'
+	else
+		return 'Create';
+	}
 
     if (currentExpressionNode.type == inputType) {
         switch (sameTypeRule) {
@@ -167,9 +188,14 @@ function getNewNodeAction (currentExpressionNode, inputType, input, sameTypeRule
                     return 'NullAction';
             case 'Overwrite':
                 return 'Overwrite';
+			case 'CreatePair':
+				return 'CreatePair';
         }
     } else {
-        return 'Create';
+		if (sameTypeRule == 'CreatePair')
+			return 'CreatePair'
+		else
+	        return 'Create';
     }
     
 }
