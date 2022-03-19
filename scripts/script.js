@@ -15,26 +15,7 @@ const expressionNodes = [];
 
 let cursorPostion = 0;
 
-
-
 let numberOfIds=0;
-
-
-let leftOperand = {
-    id: 'LEFT',
-    text: '0'
-};
-let rightOperand = {
-    id: 'RIGHT',
-    text: ''
-};
-let operator = {
-    id: 'OPERATOR',
-    text: ''
-};
-
-
-let currentObject = leftOperand;
 
 let buttons = document.querySelectorAll('.btn');
 let displayText = document.querySelector('.display');
@@ -62,7 +43,7 @@ function animate(  ) {
 		let node = expressionNodes[i]
 		if (node.type == 'Operator') {
 			node.type = 'Number';
-			node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
+			node.value = doArithmetic(node.previousNode.value,node.nextNode.value,node.value);
 			removeAdjacentNodes(node,true,true);
 			breakOut = true;
 		}
@@ -77,27 +58,30 @@ function animate(  ) {
 function processInput ( inputType, inputCode ) {
     const currentExpressionNode = expressionNodes[expressionNodes.length-1+cursorPostion];
 
-
     let action = '';
+
+
+        
+
 
     switch (inputType) {
         case 'Number':
-            if (inputCode.includes('.'))
-                action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'ExclusiveAppend');
-            else
-                action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'Append');
-            break;
+			handleNumberInput(currentExpressionNode,inputCode);
+			break;
 
         case 'Operator':
-            action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'Overwrite');
+            handleOperatorInput(currentExpressionNode,inputCode);
             break;
 
-        case 'Special':
-            action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'ExclusiveAppend');
-            break;
+		case 'Decimal':
+			handleDecimalInput(currentExpressionNode,inputCode);
 
 		case 'OpenBracket':
-			action = getNewNodeAction(currentExpressionNode,inputType,inputCode,'CreatePair');
+			handleOpenBracketInput(currentExpressionNode,inputCode);
+			break;
+
+		case 'CloseBracket':
+			handleCloseBracketInput(currentExpressionNode,inputCode);
 			break;
 
         case 'Equals':
@@ -117,18 +101,36 @@ function processInput ( inputType, inputCode ) {
 			console.table(expressionNodesOrderedByOperation);
 			let done = false;
 			let counter = 0;
+			debugger;
 			while (done == false && counter < 100) {
 				let breakOut = false;
 				for (let i = 0; i < expressionNodesOrderedByOperation.length && breakOut == false; i++ ) {
 					let node = expressionNodesOrderedByOperation[i]
-					if (node.type == 'Operator') {
-						node.type = 'Number';
-						node.value = runEquals(node.previousNode.value,node.nextNode.value,node.value);
-						removeAdjacentNodes(node,true,true);
-						breakOut = true;
+					switch (node.type) {
+						case 'Operator':
+							node.type = 'Number';
+							node.value = doArithmetic(node.previousNode.value,node.nextNode.value,node.value);
+							node.priority = -1;
+							removeExpressionNodeById(expressionNodesOrderedByOperation,node.nextNode.id);
+							removeExpressionNodeById(expressionNodesOrderedByOperation,node.previousNode.id);
+							removeAdjacentNodes(node,true,true);
+							breakOut = true;
+							break;
+						case 'OpenBracket':
+							removeNode(node);
+							removeExpressionNodeById(expressionNodes,node.id);
+							removeExpressionNodeById(expressionNodesOrderedByOperation,node.id);
+							breakOut = true;
+							break;
+						case 'CloseBracket':
+							removeNode(node);
+							removeExpressionNodeById(expressionNodes,node.id);
+							removeExpressionNodeById(expressionNodesOrderedByOperation,node.id);
+							breakOut = true;
+							break;
 					}
 				}
-				if (expressionNodesOrderedByOperation.length == 1 || expressionNodesOrderedByOperation[0].priority == -1)
+				if (expressionNodesOrderedByOperation.length == 1)
 					done = true;
 				counter++;
 			}
@@ -141,32 +143,159 @@ function processInput ( inputType, inputCode ) {
 		console.log(`Action = ${action}`);
 
 
-    switch ( action ) {
-        case 'Create':
-            expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
-            if (currentExpressionNode != undefined)
-                currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
-            break;
-		case 'CreatePair':
-			expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
-            if (currentExpressionNode != undefined)
-                currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
-			expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode('CloseBracket',')',currentExpressionNode===undefined?null:currentExpressionNode,null));
-			cursorPostion--;
-			break;
-        case 'Append':
-            currentExpressionNode.value = currentExpressionNode.value + inputCode;
-            break;
-        case 'Overwrite':
-            currentExpressionNode.type = inputType;
-            currentExpressionNode.value = inputCode;
-        case 'Evaluate':
+    // switch ( action ) {
+    //     case 'Create':
+    //         expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+    //         if (currentExpressionNode != undefined)
+    //             currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
+    //         break;
+	// 	case 'CreatePair':
+	// 		expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+    //         if (currentExpressionNode != undefined)
+    //             currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
+	// 		expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode('CloseBracket',')',currentExpressionNode===undefined?null:currentExpressionNode,null));
+	// 		cursorPostion--;
+	// 		break;
+    //     case 'Append':
+    //         currentExpressionNode.value = currentExpressionNode.value + inputCode;
+    //         break;
+    //     case 'Overwrite':
+    //         currentExpressionNode.type = inputType;
+    //         currentExpressionNode.value = inputCode;
+    //     case 'Evaluate':
             
-    }
+    // }
 
     console.table(expressionNodes);
 
     updateDisplay();
+}
+
+
+function handleNumberInput(currentExpressionNode, input) {
+    if (currentExpressionNode === undefined) {
+		createNode(currentExpressionNode,'Number',input);
+		return;
+	}
+
+	switch (currentExpressionNode.type) {
+		case 'Number':
+			currentExpressionNode.value = currentExpressionNode.value + input;
+			break;
+		case 'Operator':
+		case 'OpenBracket':
+			createNode(currentExpressionNode,'Number',input);
+			break;
+
+	}
+}
+
+function handleOperatorInput(currentExpressionNode, input) {
+    if (currentExpressionNode === undefined) {
+		createNode(currentExpressionNode,'Operator',input);
+		return;
+	}
+
+	switch (currentExpressionNode.type) {
+		case 'Number':
+		case 'CloseBracket':
+			createNode(currentExpressionNode,'Operator',input);
+			break;
+		case 'Operator':
+            currentExpressionNode.value = input;
+			break;
+
+	}
+}
+
+function handleDecimalInput(currentExpressionNode, input) {
+    if (currentExpressionNode === undefined) {
+		createNode(currentExpressionNode,'Number','0' + input);
+		return;
+	}
+
+	switch (currentExpressionNode.type) {
+		case 'Number':
+			if (!currentExpressionNode.value.includes('.')) {
+				currentExpressionNode.value = currentExpressionNode.value + input;
+			}
+			break;
+		case 'Operator':
+		case 'OpenBracket':
+			createNode(currentExpressionNode,'Number','0' + input);
+			break;
+
+	}
+}
+
+function handleOpenBracketInput(currentExpressionNode, input) {
+    createNode(currentExpressionNode,'OpenBracket','(');
+    createNode(expressionNodes[expressionNodes.length-1+cursorPostion],'CloseBracket',')');
+	cursorPostion--;
+}
+	// 	case 'CreatePair':
+	// 		expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+    //         if (currentExpressionNode != undefined)
+    //             currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1];
+	// 		expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode('CloseBracket',')',currentExpressionNode===undefined?null:currentExpressionNode,null));
+	// 		cursorPostion--;
+	// 		break;
+
+function handleCloseBracketInput(currentExpressionNode, input) {
+    if (currentExpressionNode === undefined) {
+		return;
+	}
+	for (let i = cursorPostion; i <= 0; i++) {
+		console.log(`Item ${i}: Type ${expressionNodes[expressionNodes.length-1+i].type}, Value: ${expressionNodes[expressionNodes.length-1+i].value}`);
+		if (expressionNodes[expressionNodes.length-1+i].value == ')') {
+			cursorPostion = i;
+			break;
+		}
+	}
+	const lastNodeInsideBracket = expressionNodes[expressionNodes.length-2+cursorPostion];
+
+	switch (lastNodeInsideBracket.type) {
+		case 'Number':
+			return;
+		case 'CloseBracket':
+		case 'Operator':
+			cursorPostion--;
+			runBackspace();
+			cursorPostion++;
+			return;
+		case 'OpenBracket':
+			runBackspace();
+			runBackspace();
+			return;
+		
+
+	}
+}
+
+function createNode(currentExpressionNode,inputType,inputCode) {
+	expressionNodes.splice(expressionNodes.length+cursorPostion,0,new ExpressionNode(inputType,inputCode,currentExpressionNode===undefined?null:currentExpressionNode,null));
+	if (currentExpressionNode != undefined)
+		currentExpressionNode.nextNode = expressionNodes[expressionNodes.length-1+cursorPostion];
+	if (cursorPostion < 0) {
+		expressionNodes[expressionNodes.length-1+cursorPostion].nextNode = expressionNodes[expressionNodes.length-1+cursorPostion+1];
+		expressionNodes[expressionNodes.length-1+cursorPostion+1].previousNode = expressionNodes[expressionNodes.length-1+cursorPostion];
+	}
+}
+
+function runBackspace() {
+	const previousNode = expressionNodes[expressionNodes.length-2+cursorPostion];
+	const nextNode = expressionNodes[expressionNodes.length-0+cursorPostion];
+	if (previousNode != undefined && nextNode != undefined) {
+		previousNode.nextNode = nextNode;
+		nextNode.previousNode = previousNode;
+	}
+	if (previousNode != undefined && nextNode == undefined) {
+		previousNode.nextNode = null;
+	}
+	if (previousNode == undefined && nextNode != undefined) {
+		nextNode.previousNode = null;
+	}
+	expressionNodes.splice(expressionNodes.length-1+cursorPostion,1);
 }
 
 function getNewNodeAction (currentExpressionNode, inputType, input, sameTypeRule ) {
@@ -218,8 +347,16 @@ function computeNodePriorities () {
 					case '/':
 						node.priority = 2000 + currentBracketLevel*10000 + (expressionNodes.length-i);
 						continue;
-							
 				}
+			case 'OpenBracket':
+					currentBracketLevel++;
+					node.priority = currentBracketLevel*10000 + (expressionNodes.length-i);
+					continue;
+			case 'CloseBracket':
+					node.priority = currentBracketLevel*10000 + (expressionNodes.length-i);
+					currentBracketLevel--;
+					continue;
+
 		}
 		node.priority = -1;
 		continue;
@@ -228,69 +365,6 @@ function computeNodePriorities () {
 }
 
 
-function processSpecialInput ( currentExpressionNode, input ) {
-
-
-    switch ( input ) {
-        case 'EQL':
-            if (currentObject.id == 'RIGHT' && rightOperand.text != '') {
-                runEquals();
-                operator.text = '';
-                currentObject = leftOperand;
-            }
-            break;
-        case '.':
-            if (currentExpressionNode === undefined) {
-                expressionNodes.push(new ExpressionNode('Number','0'+input,null,null));
-            } else {
-                switch (currentExpressionNode.type) {
-                    case 'Number':
-                        if (!currentExpressionNode.value.includes('.')) {
-                            currentExpressionNode.value = currentExpressionNode.value + input;
-                        }
-                        break;
-                    case 'Operator':       
-                        expressionNodes.push(new ExpressionNode('Number','0'+input,null,null));   
-                        break;
-                }
-            }
-
-
-
-            if (currentObject.id != 'OPERATOR') {
-                if (!currentObject.text.includes('.')) {
-                    currentObject.text = currentObject.text + '.';
-                }
-            } else {
-                currentObject = rightOperand;
-                currentObject.text =  '0.';
-            }
-            break;
-        case 'NEG':
-            if (currentObject.id != 'OPERATOR') {
-                if (currentObject.text.includes('-')) {
-                    currentObject.text = currentObject.text.replaceAll('-','');
-                } else {
-                    currentObject.text = '-' + currentObject.text;
-                }
-            }
-            break;
-        case 'CLR':
-            currentObject = leftOperand;
-            leftOperand.text = '0';
-            rightOperand.text = '';
-            operator.text = '';
-            break;
-        case 'BCK':
-            if (currentObject.id != 'OPERATOR') {
-                currentObject.text = currentObject.text.slice(0,currentObject.text.length-1);
-            }
-            break;
-    }
-
-    console.table(expressionNodes);
-    
-}
 
 function removeAdjacentNodes(expressionNode, removePrevious, removeNext ) {
     if (removePrevious) {
@@ -300,7 +374,7 @@ function removeAdjacentNodes(expressionNode, removePrevious, removeNext ) {
             expressionNode.previousNode.nextNode = expressionNode;
         previous.previousNode = undefined;
         previous.nextNode = undefined;
-        removeExpressionNodeById(previous.id);
+        removeExpressionNodeById(expressionNodes,previous.id);
     }
     if (removeNext) {
         const next = expressionNode.nextNode;
@@ -309,18 +383,32 @@ function removeAdjacentNodes(expressionNode, removePrevious, removeNext ) {
             expressionNode.nextNode.previousNode = expressionNode;
         next.previousNode = undefined;
         next.nextNode = undefined;
-        removeExpressionNodeById(next.id);
+        removeExpressionNodeById(expressionNodes,next.id);
     }
 }
 
-function removeExpressionNodeById( id ) {
-    const nodeIndex = expressionNodes.findIndex( Node => Node.id == id)
-    if (nodeIndex != -1) 
-        expressionNodes.splice(nodeIndex,1);
+function removeNode(expressionNode) {
+	const previous = expressionNode.previousNode;
+	const next = expressionNode.nextNode;
+	if (previous != undefined)
+		previous.nextNode = next;
+	if (next != undefined)
+		next.previousNode = previous;
+	removeExpressionNodeById(expressionNodes,expressionNode.id);
 }
 
 
-function runEquals( leftOperand, rightOperand, operator ) {
+
+function removeExpressionNodeById( nodeArray, id ) {
+    const nodeIndex = nodeArray.findIndex( Node => Node.id == id)
+    if (nodeIndex != -1) 
+	nodeArray.splice(nodeIndex,1);
+}
+
+
+function doArithmetic( leftOperand, rightOperand, operator ) {
+	leftOperand.replaceAll('⁻','-');
+	rightOperand.replaceAll('⁻','-');
     return processDecimal(performCalculation(parseFloat(leftOperand),parseFloat(rightOperand),operator)) + '';
 }
 
@@ -358,10 +446,13 @@ function updateDisplay () {
 	let displayString = '';
 
 	for (let i = 0; i < expressionNodes.length; i++) {
-		displayString = displayString + expressionNodes[i].value;
+		if (expressionNodes[i].value == '+') {
+			displayString = displayString + "<span class='red'>" + expressionNodes[i].value + "</span>";
+		} else
+			displayString = displayString + expressionNodes[i].value;
 	}
 
-	displayText.textContent = displayString;
+	displayText.innerHTML = displayString;
 
 
 }
